@@ -1,0 +1,25 @@
+{
+  "name": "placeready-ai-new",
+  "version": "1.0.0",
+  "description": "AI-Powered Placement Readiness & Skill Gap Analyzer",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cd frontend && npm start",
+    "build": "cd frontend && npm run build",
+    "deploy": "firebase deploy",
+    "install-deps": "cd frontend && npm install && cd ../backend/functions && npm install"
+  },
+  "keywords": [
+    "placement",
+    "ai",
+    "skill-analysis",
+    "education",
+    "career"
+  ],
+  "author": "PlaceReady AI Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/placeready-ai-new.git"
+  }
+}

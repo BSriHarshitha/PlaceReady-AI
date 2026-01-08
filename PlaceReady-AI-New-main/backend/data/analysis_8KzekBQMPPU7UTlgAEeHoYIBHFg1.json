@@ -1,0 +1,81 @@
+{
+  "resumeScore": 88,
+  "codingScore": 65,
+  "linkedinScore": 77,
+  "finalScore": 76,
+  "skills": [
+    "JavaScript",
+    "Python",
+    "Java",
+    "React",
+    "Node.js",
+    "HTML",
+    "CSS",
+    "SQL",
+    "MongoDB",
+    "Git",
+    "AWS",
+    "Docker"
+  ],
+  "skillGaps": [
+    "System Design",
+    "Docker",
+    "AWS",
+    "TypeScript"
+  ],
+  "recommendations": [
+    "Practice system design problems",
+    "Learn containerization with Docker",
+    "Get AWS certification",
+    "Improve TypeScript skills"
+  ],
+  "codingProfiles": {
+    "leetcode": "https://leetcode.com/u/B_Sri_Harshitha/",
+    "codechef": "",
+    "codeforces": "",
+    "github": ""
+  },
+  "codingData": {
+    "leetcode": null
+  },
+  "resumeUploaded": true,
+  "analysisDate": "2026-01-07T15:58:03.654Z",
+  "googleDriveLink": "https://drive.google.com/file/mock",
+  "aiParsedData": {
+    "personalInfo": {
+      "name": "Resume Owner",
+      "email": "contact@email.com",
+      "phone": "+91-XXXXXXXXXX",
+      "location": "India"
+    },
+    "skills": [
+      "JavaScript",
+      "Python",
+      "Java",
+      "React",
+      "Node.js",
+      "HTML",
+      "CSS",
+      "SQL",
+      "MongoDB",
+      "Git",
+      "AWS",
+      "Docker"
+    ],
+    "experience": [],
+    "education": [],
+    "projects": [],
+    "certifications": [],
+    "score": {
+      "technical": 95,
+      "experience": 87,
+      "education": 83,
+      "overall": 88
+    },
+    "validationPassed": true,
+    "fileType": "resume"
+  },
+  "enhancedWithAI": true,
+  "validationPassed": true,
+  "realDataUsed": true
+}
