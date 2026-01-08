@@ -6,10 +6,6 @@ import {
   Typography,
 } from '@mui/material';
 import {
-  Line,
-  Bar,
-  Doughnut,
-  Pie,
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
@@ -22,6 +18,7 @@ import {
   Legend,
   Filler,
 } from 'chart.js';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,

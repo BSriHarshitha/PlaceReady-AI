@@ -491,9 +491,26 @@ const AdminDashboard: React.FC = () => {
               <Button 
                 variant="contained" 
                 size="small"
+                startIcon={<Notifications />}
                 onClick={sendBulkNotification}
               >
                 Send Notification
+              </Button>
+              <Button 
+                variant="contained" 
+                size="small"
+                startIcon={<EmailIcon />}
+                onClick={() => setEmailDialogOpen(true)}
+              >
+                Send Email
+              </Button>
+              <Button 
+                variant="outlined" 
+                size="small"
+                startIcon={<FileDownload />}
+                onClick={() => setExportDialogOpen(true)}
+              >
+                Export Selected
               </Button>
             </Box>
           )}
@@ -1121,6 +1138,94 @@ const AdminDashboard: React.FC = () => {
               console.log('Generate report for:', selectedUser?.name);
             }}>
               Generate Report
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Export Dialog */}
+        <Dialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>Export Data</DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" sx={{ mb: 2 }}>
+              Choose export format for {selectedUsers.length > 0 ? `${selectedUsers.length} selected` : 'all'} students
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<FileDownload />}
+                onClick={() => exportUserData('csv')}
+                sx={{ justifyContent: 'flex-start' }}
+              >
+                Export as CSV
+              </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<FileDownload />}
+                onClick={() => exportUserData('json')}
+                sx={{ justifyContent: 'flex-start' }}
+              >
+                Export as JSON
+              </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={<PictureAsPdf />}
+                onClick={() => exportUserData('pdf')}
+                sx={{ justifyContent: 'flex-start' }}
+              >
+                Generate PDF Report
+              </Button>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setExportDialogOpen(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Email Dialog */}
+        <Dialog open={emailDialogOpen} onClose={() => setEmailDialogOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>Send Bulk Email</DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+              {selectedUsers.length > 0 
+                ? `Sending to ${selectedUsers.length} selected students`
+                : `Sending to all ${users.length} students`
+              }
+            </Typography>
+            <TextField
+              fullWidth
+              label="Subject"
+              value={emailSubject}
+              onChange={(e) => setEmailSubject(e.target.value)}
+              sx={{ mb: 2 }}
+              placeholder="Enter email subject..."
+            />
+            <TextField
+              fullWidth
+              multiline
+              rows={6}
+              label="Message"
+              value={emailBody}
+              onChange={(e) => setEmailBody(e.target.value)}
+              placeholder="Enter email message..."
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => {
+              setEmailDialogOpen(false);
+              setEmailSubject('');
+              setEmailBody('');
+            }}>
+              Cancel
+            </Button>
+            <Button 
+              variant="contained" 
+              onClick={sendBulkEmail}
+              disabled={!emailSubject || !emailBody}
+            >
+              Open Email Client
             </Button>
           </DialogActions>
         </Dialog>
