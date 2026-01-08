@@ -46,6 +46,21 @@ import {
   Refresh
 } from '@mui/icons-material';
 import { apiService } from '../services/apiService';
+import { AdminCharts } from '../components/AdminCharts';
+import { exportToCSV, exportToJSON, exportBatchReport } from '../utils/ExportUtils';
+import { toastManager } from '../utils/ToastNotification';
+import { Select, MenuItem, FormControl, InputLabel, TableSortLabel } from '@mui/material';
+import {
+  FileDownload,
+  PictureAsPdf,
+  InsertChart,
+  FilterList,
+  Sort,
+  Email as EmailIcon,
+  Notifications,
+  Assessment as AssessmentIcon,
+  BarChart,
+} from '@mui/icons-material';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -85,6 +100,12 @@ const AdminDashboard: React.FC = () => {
   const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [sortField, setSortField] = useState<string>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailBody, setEmailBody] = useState('');
 
   useEffect(() => {
     loadUsers();
@@ -201,14 +222,73 @@ const AdminDashboard: React.FC = () => {
     setSelectedUsers([]);
   };
 
-  const exportUserData = () => {
-    const dataStr = JSON.stringify(users, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = `placeready_users_${new Date().toISOString().split('T')[0]}.json`;
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+  const exportUserData = (format: 'csv' | 'json' | 'pdf' = 'json') => {
+    try {
+      if (format === 'csv') {
+        exportToCSV(filteredUsers);
+        toastManager.success('Data exported to CSV successfully!');
+      } else if (format === 'json') {
+        exportToJSON(filteredUsers);
+        toastManager.success('Data exported to JSON successfully!');
+      } else if (format === 'pdf') {
+        exportBatchReport(filteredUsers);
+        toastManager.success('Batch report generated successfully!');
+      }
+      setExportDialogOpen(false);
+    } catch (error) {
+      toastManager.error('Failed to export data. Please try again.');
+    }
+  };
+
+  const handleSort = (field: string) => {
+    const isAsc = sortField === field && sortOrder === 'asc';
+    setSortOrder(isAsc ? 'desc' : 'asc');
+    setSortField(field);
+  };
+
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    let aValue: any;
+    let bValue: any;
+
+    switch (sortField) {
+      case 'name':
+        aValue = a.name || '';
+        bValue = b.name || '';
+        break;
+      case 'score':
+        aValue = a.analysis?.finalScore || 0;
+        bValue = b.analysis?.finalScore || 0;
+        break;
+      case 'date':
+        aValue = new Date(a.registrationDate || 0).getTime();
+        bValue = new Date(b.registrationDate || 0).getTime();
+        break;
+      case 'branch':
+        aValue = a.branch || '';
+        bValue = b.branch || '';
+        break;
+      default:
+        return 0;
+    }
+
+    if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const sendBulkEmail = () => {
+    const targetUsers = selectedUsers.length > 0 ? selectedUsers : users.map(u => u.uid);
+    const emails = users
+      .filter(u => targetUsers.includes(u.uid))
+      .map(u => u.email)
+      .filter(Boolean)
+      .join(',');
+    
+    window.open(`mailto:${emails}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`);
+    toastManager.success(`Email client opened for ${targetUsers.length} users`);
+    setEmailDialogOpen(false);
+    setEmailSubject('');
+    setEmailBody('');
   };
 
   const filteredUsers = users.filter(user => {
@@ -276,12 +356,19 @@ const AdminDashboard: React.FC = () => {
               Refresh
             </Button>
             <Button 
+              variant="outlined" 
+              startIcon={<FileDownload />}
+              onClick={() => setExportDialogOpen(true)}
+            >
+              Export
+            </Button>
+            <Button 
               variant="contained" 
-              startIcon={<Download />}
-              onClick={exportUserData}
+              startIcon={<PictureAsPdf />}
+              onClick={() => exportUserData('pdf')}
               sx={{ background: 'linear-gradient(135deg, #4f46e5 0%, #3730a3 100%)' }}
             >
-              Export Data
+              Generate Report
             </Button>
           </Box>
         </Box>
@@ -422,19 +509,20 @@ const AdminDashboard: React.FC = () => {
               }}
               sx={{ minWidth: 300 }}
             />
-            <TextField
-              select
-              label="Filter by Status"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              sx={{ minWidth: 200 }}
-            >
-              <MenuItem value="all">All Students</MenuItem>
-              <MenuItem value="analyzed">Analyzed</MenuItem>
-              <MenuItem value="pending">Pending Analysis</MenuItem>
-              <MenuItem value="ready">Placement Ready</MenuItem>
-              <MenuItem value="needs-improvement">Needs Improvement</MenuItem>
-            </TextField>
+            <FormControl sx={{ minWidth: 200 }}>
+              <InputLabel>Filter by Status</InputLabel>
+              <Select
+                value={filterStatus}
+                label="Filter by Status"
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
+                <MenuItem value="all">All Students</MenuItem>
+                <MenuItem value="analyzed">Analyzed</MenuItem>
+                <MenuItem value="pending">Pending Analysis</MenuItem>
+                <MenuItem value="ready">Placement Ready</MenuItem>
+                <MenuItem value="needs-improvement">Needs Improvement</MenuItem>
+              </Select>
+            </FormControl>
           </Box>
 
           {/* Student Management Table */}
@@ -451,20 +539,52 @@ const AdminDashboard: React.FC = () => {
                         <input 
                           type="checkbox" 
                           onChange={(e) => e.target.checked ? selectAllUsers() : clearSelection()}
-                          checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
+                          checked={selectedUsers.length === sortedUsers.length && sortedUsers.length > 0}
                         />
                       </TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Student</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>
+                        <TableSortLabel
+                          active={sortField === 'name'}
+                          direction={sortField === 'name' ? sortOrder : 'asc'}
+                          onClick={() => handleSort('name')}
+                        >
+                          Student
+                        </TableSortLabel>
+                      </TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Contact</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Branch</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Readiness</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>
+                        <TableSortLabel
+                          active={sortField === 'branch'}
+                          direction={sortField === 'branch' ? sortOrder : 'asc'}
+                          onClick={() => handleSort('branch')}
+                        >
+                          Branch
+                        </TableSortLabel>
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>
+                        <TableSortLabel
+                          active={sortField === 'score'}
+                          direction={sortField === 'score' ? sortOrder : 'asc'}
+                          onClick={() => handleSort('score')}
+                        >
+                          Readiness
+                        </TableSortLabel>
+                      </TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Last Active</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>
+                        <TableSortLabel
+                          active={sortField === 'date'}
+                          direction={sortField === 'date' ? sortOrder : 'asc'}
+                          onClick={() => handleSort('date')}
+                        >
+                          Last Active
+                        </TableSortLabel>
+                      </TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {filteredUsers.map((user, index) => (
+                    {sortedUsers.map((user, index) => (
                       <TableRow key={index}>
                         <TableCell padding="checkbox">
                           <input 
@@ -575,10 +695,77 @@ const AdminDashboard: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={tabValue} index={2}>
-          <Alert severity="info" sx={{ mb: 3 }}>
-            Advanced analytics features coming soon. This will include detailed performance trends, 
-            skill gap analysis, and placement prediction models.
-          </Alert>
+          <AdminCharts users={users} />
+          
+          {/* Skill Gap Analysis */}
+          <Card sx={{ mt: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                Batch Skill Gap Analysis
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2 }}>
+                {Object.entries(
+                  users.reduce((acc: Record<string, number>, user) => {
+                    user.analysis?.skillGaps?.forEach((gap: string) => {
+                      acc[gap] = (acc[gap] || 0) + 1;
+                    });
+                    return acc;
+                  }, {})
+                )
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 10)
+                  .map(([gap, count]) => (
+                    <Paper key={gap} sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                        {gap}
+                      </Typography>
+                      <Chip label={`${count} students`} color="warning" size="small" />
+                    </Paper>
+                  ))}
+              </Box>
+            </CardContent>
+          </Card>
+
+          {/* Placement Prediction */}
+          <Card sx={{ mt: 3 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                Placement Readiness Prediction
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+                <Card sx={{ backgroundColor: '#f0fdf4', border: '1px solid #86efac' }}>
+                  <CardContent>
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#16a34a', mb: 1 }}>
+                      {Math.round((stats.ready / users.length) * 100) || 0}%
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      High Placement Probability ({stats.ready} students)
+                    </Typography>
+                  </CardContent>
+                </Card>
+                <Card sx={{ backgroundColor: '#fffbeb', border: '1px solid #fde047' }}>
+                  <CardContent>
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#d97706', mb: 1 }}>
+                      {Math.round((stats.almostReady / users.length) * 100) || 0}%
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Moderate Placement Probability ({stats.almostReady} students)
+                    </Typography>
+                  </CardContent>
+                </Card>
+                <Card sx={{ backgroundColor: '#fef2f2', border: '1px solid #fca5a5' }}>
+                  <CardContent>
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#dc2626', mb: 1 }}>
+                      {Math.round((stats.needsImprovement / users.length) * 100) || 0}%
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Low Placement Probability ({stats.needsImprovement} students)
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Box>
+            </CardContent>
+          </Card>
         </TabPanel>
 
         <Menu

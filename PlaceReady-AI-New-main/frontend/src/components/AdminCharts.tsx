@@ -43,6 +43,12 @@ interface AdminChartsProps {
 export const AdminCharts: React.FC<AdminChartsProps> = ({ users }) => {
   const usersWithAnalysis = users.filter(u => u.analysis);
   
+  const stats = {
+    ready: usersWithAnalysis.filter(u => u.analysis.finalScore >= 70).length,
+    almostReady: usersWithAnalysis.filter(u => u.analysis.finalScore >= 50 && u.analysis.finalScore < 70).length,
+    needsImprovement: usersWithAnalysis.filter(u => u.analysis.finalScore < 50).length,
+  };
+  
   // Score Distribution Data
   const scoreRanges = {
     '0-30': usersWithAnalysis.filter(u => u.analysis.finalScore >= 0 && u.analysis.finalScore <= 30).length,
@@ -66,15 +72,9 @@ export const AdminCharts: React.FC<AdminChartsProps> = ({ users }) => {
   // Trend Data (last 7 days simulation)
   const trendData = {
     labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
-    ready: [5, 7, 8, 10, 12, 15, stats.ready],
-    almostReady: [3, 4, 5, 6, 7, 8, stats.almostReady],
-    needsImprovement: [2, 2, 3, 3, 4, 4, stats.needsImprovement],
-  };
-
-  const stats = {
-    ready: usersWithAnalysis.filter(u => u.analysis.finalScore >= 70).length,
-    almostReady: usersWithAnalysis.filter(u => u.analysis.finalScore >= 50 && u.analysis.finalScore < 70).length,
-    needsImprovement: usersWithAnalysis.filter(u => u.analysis.finalScore < 50).length,
+    ready: [Math.max(0, stats.ready - 10), Math.max(0, stats.ready - 8), Math.max(0, stats.ready - 5), Math.max(0, stats.ready - 3), Math.max(0, stats.ready - 2), Math.max(0, stats.ready - 1), stats.ready],
+    almostReady: [Math.max(0, stats.almostReady - 5), Math.max(0, stats.almostReady - 4), Math.max(0, stats.almostReady - 3), Math.max(0, stats.almostReady - 2), Math.max(0, stats.almostReady - 1), stats.almostReady - 1, stats.almostReady],
+    needsImprovement: [Math.max(0, stats.needsImprovement - 2), Math.max(0, stats.needsImprovement - 1), stats.needsImprovement - 1, stats.needsImprovement - 1, stats.needsImprovement, stats.needsImprovement, stats.needsImprovement],
   };
 
   const scoreDistributionData = {
