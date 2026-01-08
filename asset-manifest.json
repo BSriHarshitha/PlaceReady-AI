@@ -1,0 +1,17 @@
+{
+  "files": {
+    "main.css": "/PlaceReady-AI/static/css/main.afa62ca2.css",
+    "main.js": "/PlaceReady-AI/static/js/main.2160ed74.js",
+    "static/js/977.240addac.chunk.js": "/PlaceReady-AI/static/js/977.240addac.chunk.js",
+    "static/js/455.8815b1fe.chunk.js": "/PlaceReady-AI/static/js/455.8815b1fe.chunk.js",
+    "index.html": "/PlaceReady-AI/index.html",
+    "main.afa62ca2.css.map": "/PlaceReady-AI/static/css/main.afa62ca2.css.map",
+    "main.2160ed74.js.map": "/PlaceReady-AI/static/js/main.2160ed74.js.map",
+    "977.240addac.chunk.js.map": "/PlaceReady-AI/static/js/977.240addac.chunk.js.map",
+    "455.8815b1fe.chunk.js.map": "/PlaceReady-AI/static/js/455.8815b1fe.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.afa62ca2.css",
+    "static/js/main.2160ed74.js"
+  ]
+}
